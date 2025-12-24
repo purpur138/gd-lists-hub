@@ -316,10 +316,16 @@ function parse(rawText){
     if(found){ current=cats[found.id]; continue }
     if(!current) continue
     if(l==="---") continue
-    var idx=line.indexOf(":")
-    if(idx<0) continue
-    var title=norm(line.slice(0,idx))
-    var url=norm(line.slice(idx+1))
+    var title="", url=""
+    var m=line.match(/^(.*?):\s*(https?:\/\/.*)$/)
+    if(m){ title=norm(m[1]); url=norm(m[2]) }
+    else{
+      var idx=line.indexOf(": ")
+      if(idx<0) idx=line.indexOf(":")
+      if(idx<0) continue
+      title=norm(line.slice(0,idx))
+      url=norm(line.slice(idx+1))
+    }
     if(!title) continue
     if(url&&url===title) url=""
     current.items.push({title:title,url:url,removed:false})
@@ -357,8 +363,14 @@ function dedupe(cats){
     Object.keys(map).forEach(function(key){
       var arr=map[key]
       var minLvl=arr.reduce(function(a,b){return Math.min(a,b.lvl)},99)
+      var canonical=arr.find(function(r){return r.lvl===minLvl})||arr[0]
       arr.forEach(function(ref){
-        if(ref.lvl>minLvl){ cats[ref.cat].items[ref.idx].removed=true }
+        if(ref.lvl>minLvl){
+          var it=cats[ref.cat].items[ref.idx]
+          it.removed=true
+          it.duplicateOf=canonical.cat
+          it.reason=(map===byUrl?"same url":map===byTitleHost?"same title@host":"same title")
+        }
       })
     })
   }
@@ -373,18 +385,36 @@ function dedupe(cats){
       if(it.removed) continue
       var lk=normLower(it.url)
       if(lk){
-        if(seenLink[lk]!==undefined){ cat.items[seenLink[lk]].removed=true; seenLink[lk]=i } else { seenLink[lk]=i }
+        if(seenLink[lk]!==undefined){
+          var prevIdx=seenLink[lk]
+          cat.items[prevIdx].removed=true
+          cat.items[prevIdx].duplicateOf=cat.meta.id
+          cat.items[prevIdx].reason="same url (same level)"
+          seenLink[lk]=i
+        } else { seenLink[lk]=i }
  var host=""
         try{ host=new URL(it.url,location.href).hostname }catch(e){ host="" }
         if(host){
           var th=normLower(it.title)+"@"+host
           if(!seenTitle[th]) seenTitle[th]=i
-          else { cat.items[seenTitle[th]].removed=true; seenTitle[th]=i }
+          else {
+            var prev=seenTitle[th]
+            cat.items[prev].removed=true
+            cat.items[prev].duplicateOf=cat.meta.id
+            cat.items[prev].reason="same title@host (same level)"
+            seenTitle[th]=i
+          }
         }
       }else{
         var tkOnly=normLower(it.title)
         if(tkOnly){
-          if(seenTitle[tkOnly]!==undefined){ cat.items[seenTitle[tkOnly]].removed=true; seenTitle[tkOnly]=i } else { seenTitle[tkOnly]=i }
+          if(seenTitle[tkOnly]!==undefined){
+            var prev2=seenTitle[tkOnly]
+            cat.items[prev2].removed=true
+            cat.items[prev2].duplicateOf=cat.meta.id
+            cat.items[prev2].reason="same title (same level)"
+            seenTitle[tkOnly]=i
+          } else { seenTitle[tkOnly]=i }
         }
       }
     }
@@ -479,6 +509,7 @@ main()
 </script>
 </body>
 </html>
+
 
 
 
