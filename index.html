@@ -357,19 +357,21 @@ function dedupe(cats){
     var cat=cats[k]
     var lvl=cat.meta.level
     cat.items.forEach(function(it,idx){
-      var urlKey=normLower(it.url)
+      var urlKey=normalizeUrl(it.url)
       if(urlKey){
         if(!byUrl[urlKey]) byUrl[urlKey]=[]
         byUrl[urlKey].push({cat:k,lvl:lvl,idx:idx})
         var host=""
         try{ host=new URL(it.url,location.href).hostname }catch(e){ host="" }
+        if(host) host=host.toLowerCase().replace(/^www\./,"")
         if(host){
-          var th=normLower(it.title)+"@"+host
+          var th=normalizeTitle(it.title)+"@"+host
           if(!byTitleHost[th]) byTitleHost[th]=[]
           byTitleHost[th].push({cat:k,lvl:lvl,idx:idx})
         }
+        console.log("DEDUP KEY:", urlKey)
       }else{
-        var tOnly=normLower(it.title)
+        var tOnly=normalizeTitle(it.title)
         if(tOnly){
           if(!byTitleOnlyNoUrl[tOnly]) byTitleOnlyNoUrl[tOnly]=[]
           byTitleOnlyNoUrl[tOnly].push({cat:k,lvl:lvl,idx:idx})
@@ -401,7 +403,7 @@ function dedupe(cats){
     for(var i=0;i<cat.items.length;i++){
       var it=cat.items[i]
       if(it.removed) continue
-      var lk=normLower(it.url)
+      var lk=normalizeUrl(it.url)
       if(lk){
         if(seenLink[lk]!==undefined){
           var prevIdx=seenLink[lk]
@@ -412,8 +414,9 @@ function dedupe(cats){
         } else { seenLink[lk]=i }
         var host=""
         try{ host=new URL(it.url,location.href).hostname }catch(e){ host="" }
+        if(host) host=host.toLowerCase().replace(/^www\./,"")
         if(host){
-          var th=normLower(it.title)+"@"+host
+          var th=normalizeTitle(it.title)+"@"+host
           if(!seenTitle[th]) seenTitle[th]=i
           else {
             var prev=seenTitle[th]
@@ -424,7 +427,7 @@ function dedupe(cats){
           }
         }
       }else{
-        var tkOnly=normLower(it.title)
+        var tkOnly=normalizeTitle(it.title)
         if(tkOnly){
           if(seenTitle[tkOnly]!==undefined){
             var prev2=seenTitle[tkOnly]
@@ -601,11 +604,32 @@ function main(){
   })
   runUrlValidationTests()
   runDataCleanupChecks(cats)
+  runNormalizationTests()
 }
 function matchesQuery(text,query){
   var t=(text||"").toLowerCase(), q=(query||"").toLowerCase()
   if(!q) return true
   return t.indexOf(q)!==-1
+}
+function normalizeUrl(u){
+  if(u===null || u===undefined) return ""
+  var s=String(u).trim()
+  if(!s) return ""
+  try{
+    var parsed=new URL(s,window.location.href)
+    if(!/^https?:$/i.test(parsed.protocol)) return s.toLowerCase()
+    var host=(parsed.hostname||"").toLowerCase().replace(/^www\./,"")
+    var path=(parsed.pathname||"/").replace(/\/index\.html$/i,"")
+    if(path!=="/") path=path.replace(/\/+$/,"")
+    if(path==="") path="/"
+    return "https://"+host+path
+  }catch(e){
+    return s.toLowerCase()
+  }
+}
+function normalizeTitle(t){
+  if(t===null || t===undefined) return ""
+  return String(t).toLowerCase().trim().replace(/\s+/g," ")
 }
 function isValidExternalUrl(url){
   if(!url) return false
@@ -651,6 +675,25 @@ function runDataCleanupChecks(cats){
     })
   })
   console.log("Data cleanup summary:", {total:total, invalidOrNoLink:noLink})
+}
+function runNormalizationTests(){
+  var urls=["https://pointercrate.com","https://pointercrate.com/","https://www.pointercrate.com"]
+  var keys=urls.map(function(u){return normalizeUrl(u)})
+  console.log("Normalization keys:", keys)
+  console.log("Pointercrate keys equal:", keys[0]===keys[1] && keys[1]===keys[2])
+  var cats={
+    level1:{meta:{id:"level1",level:1,title:"Level1"},items:[{title:"Pointercrate A",url:urls[0],removed:false}]},
+    level2:{meta:{id:"level2",level:2,title:"Level2"},items:[{title:"Pointercrate B",url:urls[2],removed:false}]},
+    level3_docs:{meta:{id:"level3_docs",level:3,title:"Docs"},items:[]},
+    level3_sheets:{meta:{id:"level3_sheets",level:3,title:"Sheets"},items:[]},
+    level4:{meta:{id:"level4",level:4,title:"Discontinued"},items:[]}
+  }
+  var result=dedupe(cats)
+  console.log("Duplicate detection result:", {
+    l1_removed: result.level1.items[0].removed||false,
+    l2_removed: result.level2.items[0].removed||false,
+    l2_reason: result.level2.items[0].reason||null
+  })
 }
 main()
 </script>
