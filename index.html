@@ -67,17 +67,6 @@ body{margin:0;background:#0b0e12;color:#e6e9ee;font-family:Inter,system-ui,-appl
   <div class="contact">If you know of any updated versions of existing lists or want to suggest new lists to be added, please contact:<br>- Discord: <b>purpurrr13#0000</b><br>- Email: <b>droxyt518@gmail.com</b></div>
   <div class="footnote">Duplicates are removed across levels per rules; Discord-only and backups keep all entries</div>
   <div class="attribution">This hub was inspired by <a href="https://docs.google.com/document/d/1tYM7XWS18B7s2g4lplzF6qU2T8LHi3-kQkybGIhXlqE/edit?tab=t.0">'THE GD LIST HUB'</a> Google Doc owned by NotMuch </div>
-  <div class="info">
-    <div class="info-title">UI Components Guide – Search</div>
-    <ul class="info-list">
-      <li>Search appears at the top of each category when expanded.</li>
-      <li>Real-time filtering; Enter executes; Esc clears.</li>
-      <li>Accessible input with ARIA labels and focus styling.</li>
-      <li>Consistent styling across all category levels.</li>
-      <li>"No results found" message and lightweight loading state.</li>
-      <li>Search clears when navigating between categories.</li>
-    </ul>
-  </div>
 </div>
 <script>
 var raw=`other hubs:
@@ -609,28 +598,7 @@ function matchesQuery(text,query){
   if(!q) return true
   return t.indexOf(q)!==-1
 }
-function runSearchTests(){
-  var cases=[
-    {t:"Pointercrate Demon List", q:"pointer", expect:true},
-    {t:"Pointercrate Demon List", q:"crate", expect:true},
-    {t:"Shitty List", q:"shitty", expect:true},
-    {t:"Insane Demon List", q:"insane", expect:true},
-    {t:"Mobile Challenge List", q:"desktop", expect:false},
-    {t:"", q:"anything", expect:false},
-    {t:"Nine Circles", q:"nine circles", expect:true}
-  ]
-  var pass=0
-  for(var i=0;i<cases.length;i++){
-    var c=cases[i]
-    if(matchesQuery(c.t,c.q)===c.expect) pass++
-  }
-  var info=document.createElement("div")
-  info.className="footnote"
-  info.textContent="Search tests passed: "+pass+"/"+cases.length
-  document.querySelector(".container").appendChild(info)
-}
 main()
-runSearchTests()
 </script>
 </body>
 </html>
