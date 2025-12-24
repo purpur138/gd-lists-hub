@@ -34,6 +34,17 @@ body{margin:0;background:#0b0e12;color:#e6e9ee;font-family:Inter,system-ui,-appl
 .attribution{opacity:.75;font-size:12px;margin-top:12px}
 .section-header:hover{background:#171c25}
 .arrow{width:18px;display:inline-block;text-align:center;margin-right:8px;color:#cbd4e1}
+.search{display:none;border-bottom:1px solid #1d2430;background:#12161d;padding:10px 12px}
+.search-wrap{display:flex;align-items:center;gap:8px}
+.search-icon{width:16px;height:16px;color:#aab6c7}
+.search-input{flex:1;background:#0f1218;border:1px solid #2a3448;color:#e6e9ee;border-radius:8px;padding:10px 12px;font-size:13px}
+.search-input::placeholder{color:#95a2b8}
+.search-input:focus{outline:none;border-color:#3b4a66;box-shadow:0 0 0 3px #1a2234}
+.search-controls{display:flex;gap:8px;margin-left:8px}
+.btn{appearance:none;background:#0f1218;border:1px solid #2a3448;color:#cbd4e1;border-radius:8px;padding:8px 10px;font-size:12px;cursor:pointer}
+.btn:active{transform:scale(.99)}
+.loading{display:none;font-size:12px;color:#95a2b8;margin-top:8px}
+.no-results{display:none;padding:12px 16px;color:#95a2b8}
 </style>
 </head>
 <body>
@@ -56,6 +67,17 @@ body{margin:0;background:#0b0e12;color:#e6e9ee;font-family:Inter,system-ui,-appl
   <div class="contact">If you know of any updated versions of existing lists or want to suggest new lists to be added, please contact:<br>- Discord: <b>purpurrr13#0000</b><br>- Email: <b>droxyt518@gmail.com</b></div>
   <div class="footnote">Duplicates are removed across levels per rules; Discord-only and backups keep all entries</div>
   <div class="attribution">This hub was inspired by <a href="https://docs.google.com/document/d/1tYM7XWS18B7s2g4lplzF6qU2T8LHi3-kQkybGIhXlqE/edit?tab=t.0">'THE GD LIST HUB'</a> Google Doc owned by NotMuch </div>
+  <div class="info">
+    <div class="info-title">UI Components Guide – Search</div>
+    <ul class="info-list">
+      <li>Search appears at the top of each category when expanded.</li>
+      <li>Real-time filtering; Enter executes; Esc clears.</li>
+      <li>Accessible input with ARIA labels and focus styling.</li>
+      <li>Consistent styling across all category levels.</li>
+      <li>"No results found" message and lightweight loading state.</li>
+      <li>Search clears when navigating between categories.</li>
+    </ul>
+  </div>
 </div>
 <script>
 var raw=`other hubs:
@@ -339,7 +361,7 @@ function dedupe(cats){
     var cat=cats[k]
     var lvl=cat.meta.level
     cat.items.forEach(function(it,idx){
-     var urlKey=normLower(it.url)
+      var urlKey=normLower(it.url)
       if(urlKey){
         if(!byUrl[urlKey]) byUrl[urlKey]=[]
         byUrl[urlKey].push({cat:k,lvl:lvl,idx:idx})
@@ -392,7 +414,7 @@ function dedupe(cats){
           cat.items[prevIdx].reason="same url (same level)"
           seenLink[lk]=i
         } else { seenLink[lk]=i }
- var host=""
+        var host=""
         try{ host=new URL(it.url,location.href).hostname }catch(e){ host="" }
         if(host){
           var th=normLower(it.title)+"@"+host
@@ -452,6 +474,44 @@ function makeSection(catId,catData){
   header.appendChild(controls)
   var list=document.createElement("div")
   list.className="list"
+  var search=document.createElement("div")
+  search.className="search"
+  var searchWrap=document.createElement("div")
+  searchWrap.className="search-wrap"
+  var icon=document.createElementNS("http://www.w3.org/2000/svg","svg")
+  icon.setAttribute("class","search-icon")
+  icon.setAttribute("viewBox","0 0 24 24")
+  var path=document.createElementNS("http://www.w3.org/2000/svg","path")
+  path.setAttribute("fill","currentColor")
+  path.setAttribute("d","M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 5L20.49 19l-5-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z")
+  icon.appendChild(path)
+  var input=document.createElement("input")
+  input.setAttribute("class","search-input")
+  input.setAttribute("type","text")
+  input.setAttribute("placeholder","Search this category...")
+  input.setAttribute("aria-label","Search this category")
+  var controls=document.createElement("div")
+  controls.className="search-controls"
+  var btnSearch=document.createElement("button")
+  btnSearch.className="btn"
+  btnSearch.textContent="Search"
+  btnSearch.setAttribute("aria-label","Execute search")
+  var btnClear=document.createElement("button")
+  btnClear.className="btn"
+  btnClear.textContent="Clear"
+  btnClear.setAttribute("aria-label","Clear search")
+  controls.appendChild(btnSearch)
+  controls.appendChild(btnClear)
+  searchWrap.appendChild(icon)
+  searchWrap.appendChild(input)
+  searchWrap.appendChild(controls)
+  var loading=document.createElement("div")
+  loading.className="loading"
+  loading.textContent="Filtering…"
+  search.appendChild(searchWrap)
+  search.appendChild(loading)
+  list.appendChild(search)
+  var rows=[]
   catData.items.forEach(function(it){
     if(it.removed) return
     var row=document.createElement("div")
@@ -483,17 +543,56 @@ function makeSection(catId,catData){
     row.appendChild(left)
     row.appendChild(right)
     list.appendChild(row)
+    rows.push({el:row,text:(it.title||"")})
   })
+  var noRes=document.createElement("div")
+  noRes.className="no-results"
+  noRes.setAttribute("role","status")
+  noRes.setAttribute("aria-live","polite")
+  noRes.textContent="No results found"
+  list.appendChild(noRes)
   function toggle(){
     var open=list.style.display==="block"
     list.style.display=open?"none":"block"
     btn.textContent=open?"Expand":"Collapse"
     arrow.textContent=open?"▸":"▾"
+    if(!open){
+      search.style.display="block"
+      input.value=""
+      filter("")
+      if(window.__openSection && typeof window.__openSection==="function"){ window.__openSection() }
+      window.__openSection=function(){ input.value=""; filter("") }
+      input.focus()
+    }
   }
   header.addEventListener("click",toggle)
   btn.addEventListener("click",function(e){e.stopPropagation();toggle()})
   section.appendChild(header)
   section.appendChild(list)
+  function filter(q){
+    loading.style.display="block"
+    var any=false
+    for(var i=0;i<rows.length;i++){
+      var r=rows[i]
+      var show=matchesQuery(r.text,q)
+      r.el.style.display=show?"flex":"none"
+      if(show) any=true
+    }
+    noRes.style.display=any?"none":"block"
+    loading.style.display="none"
+  }
+  var raf=null
+  function onInput(){
+    if(raf) cancelAnimationFrame(raf)
+    raf=requestAnimationFrame(function(){ filter(input.value) })
+  }
+  input.addEventListener("input",onInput)
+  input.addEventListener("keydown",function(e){
+    if(e.key==="Enter"){ e.preventDefault(); filter(input.value) }
+    else if(e.key==="Escape"){ e.preventDefault(); input.value=""; filter("") }
+  })
+  btnSearch.addEventListener("click",function(){ filter(input.value) })
+  btnClear.addEventListener("click",function(){ input.value=""; filter(""); input.focus() })
   return section
 }
 function main(){
@@ -505,10 +604,37 @@ function main(){
     root.appendChild(makeSection(id,cats[id]))
   })
 }
+function matchesQuery(text,query){
+  var t=(text||"").toLowerCase(), q=(query||"").toLowerCase()
+  if(!q) return true
+  return t.indexOf(q)!==-1
+}
+function runSearchTests(){
+  var cases=[
+    {t:"Pointercrate Demon List", q:"pointer", expect:true},
+    {t:"Pointercrate Demon List", q:"crate", expect:true},
+    {t:"Shitty List", q:"shitty", expect:true},
+    {t:"Insane Demon List", q:"insane", expect:true},
+    {t:"Mobile Challenge List", q:"desktop", expect:false},
+    {t:"", q:"anything", expect:false},
+    {t:"Nine Circles", q:"nine circles", expect:true}
+  ]
+  var pass=0
+  for(var i=0;i<cases.length;i++){
+    var c=cases[i]
+    if(matchesQuery(c.t,c.q)===c.expect) pass++
+  }
+  var info=document.createElement("div")
+  info.className="footnote"
+  info.textContent="Search tests passed: "+pass+"/"+cases.length
+  document.querySelector(".container").appendChild(info)
+}
 main()
+runSearchTests()
 </script>
 </body>
 </html>
+
 
 
 
