@@ -328,15 +328,29 @@ function parse(rawText){
 }
 function dedupe(cats){
   var levels=["level1","level2","level3_docs","level3_sheets","level4"]
-  var byLink={}, byTitle={}
+  var byUrl={}, byTitleHost={}, byTitleOnlyNoUrl={}
   levels.forEach(function(k){
     var cat=cats[k]
     var lvl=cat.meta.level
     cat.items.forEach(function(it,idx){
-      var linkKey=normLower(it.url)
-      var titleKey=normLower(it.title)
-      if(linkKey){ if(!byLink[linkKey]) byLink[linkKey]=[]; byLink[linkKey].push({cat:k,lvl:lvl,idx:idx}) }
-      if(titleKey){ if(!byTitle[titleKey]) byTitle[titleKey]=[]; byTitle[titleKey].push({cat:k,lvl:lvl,idx:idx}) }
+     var urlKey=normLower(it.url)
+      if(urlKey){
+        if(!byUrl[urlKey]) byUrl[urlKey]=[]
+        byUrl[urlKey].push({cat:k,lvl:lvl,idx:idx})
+        var host=""
+        try{ host=new URL(it.url,location.href).hostname }catch(e){ host="" }
+        if(host){
+          var th=normLower(it.title)+"@"+host
+          if(!byTitleHost[th]) byTitleHost[th]=[]
+          byTitleHost[th].push({cat:k,lvl:lvl,idx:idx})
+        }
+      }else{
+        var tOnly=normLower(it.title)
+        if(tOnly){
+          if(!byTitleOnlyNoUrl[tOnly]) byTitleOnlyNoUrl[tOnly]=[]
+          byTitleOnlyNoUrl[tOnly].push({cat:k,lvl:lvl,idx:idx})
+        }
+      }
     })
   })
   function applyAcross(map){
@@ -348,20 +362,30 @@ function dedupe(cats){
       })
     })
   }
-  applyAcross(byLink)
-  applyAcross(byTitle)
+  applyAcross(byUrl)
+  applyAcross(byTitleHost)
+  applyAcross(byTitleOnlyNoUrl)
   levels.forEach(function(k){
     var cat=cats[k]
     var seenLink={}, seenTitle={}
     for(var i=0;i<cat.items.length;i++){
       var it=cat.items[i]
       if(it.removed) continue
-      var lk=normLower(it.url), tk=normLower(it.title)
+      var lk=normLower(it.url)
       if(lk){
         if(seenLink[lk]!==undefined){ cat.items[seenLink[lk]].removed=true; seenLink[lk]=i } else { seenLink[lk]=i }
-      }
-      if(tk){
-        if(seenTitle[tk]!==undefined){ cat.items[seenTitle[tk]].removed=true; seenTitle[tk]=i } else { seenTitle[tk]=i }
+ var host=""
+        try{ host=new URL(it.url,location.href).hostname }catch(e){ host="" }
+        if(host){
+          var th=normLower(it.title)+"@"+host
+          if(!seenTitle[th]) seenTitle[th]=i
+          else { cat.items[seenTitle[th]].removed=true; seenTitle[th]=i }
+        }
+      }else{
+        var tkOnly=normLower(it.title)
+        if(tkOnly){
+          if(seenTitle[tkOnly]!==undefined){ cat.items[seenTitle[tkOnly]].removed=true; seenTitle[tkOnly]=i } else { seenTitle[tkOnly]=i }
+        }
       }
     }
   })
@@ -455,5 +479,6 @@ main()
 </script>
 </body>
 </html>
+
 
 
