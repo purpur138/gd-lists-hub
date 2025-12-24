@@ -75,7 +75,7 @@ The GD List Hub: https://docs.google.com/document/d/1tYM7XWS18B7s2g4lplzF6qU2T8L
 Top 1s List: https://docs.google.com/document/d/1UCcy5520cQs2PA4eTjyfOLSBXqe6ADIoeHwQXjb5Dhg/edit
 Bottom 1s List: https://docs.google.com/document/d/1JjU5IhAaayKfInc8iCGGnlJZ566Y92b1TkdsXDOIK4Q/edit#
 Density List: https://docs.google.com/spreadsheets/d/1WMosrsAabL0F7_k8j-nMaYX_XF_Cpd5GVy9Lq8gurvI/edit#gid=0
-Song File Hub: songfilehub.com
+Song File Hub: https://songfilehub.com/home
 
 ---
 
@@ -115,9 +115,9 @@ All Rated Extreme Demons List: https://aredl.net
 Challenge List: https://challengelist.gd/challenges/
 Easy Demon List: https://easydemonlist.pages.dev/#/
 Geometry Dash Demon Ladder: https://gdladder.com
-Geometry Dash Demon Progression List: gddp.pro
+Geometry Dash Demon Progression List: https://gddp.pro/tracker
 Global Demonlist: https://demonlist.org
-Hard Demon List: hdl.pages.dev
+Hard Demon List: https://hdl.pages.dev/#/
 Hardest Impossible Levels List: https://impossiblelevels.com
 Insane Demon List: https://insanedemonlist.com
 Low Refresh Rate Demon List: https://gdlrrlist.com
@@ -342,6 +342,10 @@ function parse(rawText){
     }
     if(!title) continue
     if(url&&url===title) url=""
+    title=title.replace(/\|/g,"").trim()
+    url=url.replace(/\|/g,"").trim()
+    if(title==="-" || title==="") continue
+    if(url==="-" || url==="purpur138.github.io") url=""
     current.items.push({title:title,url:url,removed:false})
   }
   return cats
@@ -511,7 +515,7 @@ function makeSection(catId,catData){
     var left=document.createElement("div")
     var right=document.createElement("div")
     right.className="muted"
-    if(it.url){
+    if(isValidExternalUrl(it.url)){
       var a=document.createElement("a")
       a.href=it.url
       a.target="_blank"
@@ -527,7 +531,7 @@ function makeSection(catId,catData){
       b.textContent="no link"
       left.appendChild(b)
     }
-    if(it.url){
+    if(isValidExternalUrl(it.url)){
       var host=""
       try{ host=new URL(it.url,location.href).hostname }catch(e){ host="invalid link" }
       right.textContent=host
@@ -595,11 +599,58 @@ function main(){
   order.forEach(function(id){
     root.appendChild(makeSection(id,cats[id]))
   })
+  runUrlValidationTests()
+  runDataCleanupChecks(cats)
 }
 function matchesQuery(text,query){
   var t=(text||"").toLowerCase(), q=(query||"").toLowerCase()
   if(!q) return true
   return t.indexOf(q)!==-1
+}
+function isValidExternalUrl(url){
+  if(!url) return false
+  var trimmed=(url||"").trim()
+  if(!trimmed) return false
+  if(!/^https?:\/\//i.test(trimmed)) return false
+  try{
+    var parsed=new URL(trimmed,window.location.href)
+    if(parsed.hostname==="purpur138.github.io" && (parsed.pathname==="/" || parsed.pathname==="")) return false
+    if(parsed.origin===window.location.origin) return false
+    return true
+  }catch(e){
+    return false
+  }
+}
+function runUrlValidationTests(){
+  var cases=[
+    {u:null, expect:false},
+    {u:"", expect:false},
+    {u:"   ", expect:false},
+    {u:"purpur138.github.io", expect:false},
+    {u:"https://purpur138.github.io", expect:false},
+    {u:"https://purpur138.github.io/path", expect:true},
+    {u:"http://example.com", expect:true},
+    {u:"https://example.com/page", expect:true},
+    {u:"ftp://example.com", expect:false},
+    {u:window.location.origin, expect:false},
+    {u:"https://invalid:////", expect:false}
+  ]
+  var pass=0
+  for(var i=0;i<cases.length;i++){
+    var c=cases[i]
+    if(isValidExternalUrl(c.u)===c.expect) pass++
+  }
+  console.log("URL validation tests:", pass+"/"+cases.length)
+}
+function runDataCleanupChecks(cats){
+  var total=0, noLink=0
+  Object.keys(cats).forEach(function(k){
+    cats[k].items.forEach(function(it){
+      total++
+      if(!isValidExternalUrl(it.url)) noLink++
+    })
+  })
+  console.log("Data cleanup summary:", {total:total, invalidOrNoLink:noLink})
 }
 main()
 </script>
