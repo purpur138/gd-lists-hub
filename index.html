@@ -81,7 +81,7 @@ Song File Hub: https://songfilehub.com/home
 
 lists that have their own website/google site:
 
-Pointercrate: https://pointercrate.com/demonlist
+Pointercrate: https://pointercrate.com
 Challenge List: https://challengelist.gd
 Impossible Levels List: https://impossiblelevels.com
 Shitty List: https://tsl.pages.dev/
@@ -261,7 +261,6 @@ Hardest Normals List: https://discord.com/invite/BaNYGTg
 Backups of existing lists (actually intended to be a backup):
 
 Challenge List(Backup): https://docs.google.com/document/d/19Trm1wgo2NvKIy2faOYsUmVRgU-_NBUC8m3mcBv7J_E/edit?usp=sharing
-Unrated Demon List:(Bakcup): https://docs.google.com/document/d/11PpTKKK_-meIr1tLkkgupeoUb01X6_B4eGP28-BcX4/edit?usp=sharing
 
 ---
 
@@ -298,6 +297,7 @@ Worst Levels List: https://docs.google.com/document/d/1Uk_fPXA9LJoSq-77518xepsIN
 XGDPS Demon List: https://discord.gg/ZnAeAsFhJb
 CatstiksGDPS Demon List: https://discord.gg/wu8Hh9kb9G
 CatstiksGDPS Challenge List: https://discord.gg/wu8Hh9kb9G
+Unrated Demon List(Bakcup): https://docs.google.com/document/d/11PpTKKK_-meIr1tLkkgupeoUb01X6_B4eGP28-BcX4/edit?usp=sharing
 
 ---
 
@@ -306,6 +306,7 @@ if you know that there is any updated version of any list that you know or you w
 function norm(s){return (s||"").trim()}
 function normLower(s){return norm(s).toLowerCase()}
 function normalizeMarkerText(s){return normLower(s).replace(/[^a-z0-9\s]/g," ").replace(/\s+/g," ").trim()}
+function normalize(s){return String(s||"").trim().toLowerCase()}
 function parse(rawText){
   var lines=rawText.split(/\r?\n/), cats={}
   var defs=[
@@ -440,6 +441,28 @@ function dedupe(cats){
       }
     }
   })
+  return cats
+}
+function dedupeGlobal(cats){
+  var order=["level1","level2","level3_docs","level3_sheets","no_discord","no_backup","level4"]
+  var seen=new Set()
+  for(var oi=0;oi<order.length;oi++){
+    var id=order[oi]
+    var cat=cats[id]
+    var items=cat.items
+    for(var i=0;i<items.length;i++){
+      var it=items[i]
+      var key=makeKey(it)
+      if(key){
+        console.log("DEDUP KEY:", normalizeUrl(it.url))
+        if(seen.has(key)){
+          it.removed=true
+        } else {
+          seen.add(key)
+        }
+      }
+    }
+  }
   return cats
 }
 function makeSection(catId,catData){
@@ -596,7 +619,7 @@ function makeSection(catId,catData){
 }
 function main(){
   var cats=parse(raw)
-  cats=dedupe(cats)
+  cats=dedupeGlobal(cats)
   var order=["level1","level2","level3_docs","level3_sheets","no_discord","no_backup","level4"]
   var root=document.getElementById("sections")
   order.forEach(function(id){
@@ -617,19 +640,26 @@ function normalizeUrl(u){
   if(!s) return ""
   try{
     var parsed=new URL(s,window.location.href)
-    if(!/^https?:$/i.test(parsed.protocol)) return s.toLowerCase()
+    var protocol=(parsed.protocol||"").toLowerCase()
     var host=(parsed.hostname||"").toLowerCase().replace(/^www\./,"")
-    var path=(parsed.pathname||"/").replace(/\/index\.html$/i,"")
+    var path=(parsed.pathname||"/")
     if(path!=="/") path=path.replace(/\/+$/,"")
     if(path==="") path="/"
-    return "https://"+host+path
+    return protocol+"//"+host+path
   }catch(e){
-    return s.toLowerCase()
+    return ""
   }
 }
 function normalizeTitle(t){
   if(t===null || t===undefined) return ""
   return String(t).toLowerCase().trim().replace(/\s+/g," ")
+}
+function makeKey(it){
+  var u=normalizeUrl(it&&it.url)
+  if(u) return "url:"+u
+  var tt=normalize(it&&it.title)
+  if(!tt) return ""
+  return "title:"+tt
 }
 function isValidExternalUrl(url){
   if(!url) return false
