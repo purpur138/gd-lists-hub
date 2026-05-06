@@ -12,9 +12,9 @@ just a clean and fast way to find lists.
 Geometry Dash Lists Hub is a single-page, static website created to centralize many Geometry Dash lists that are currently scattered across Google Docs, spreadsheets, and various websites.
 
 The goal is not to replace existing lists, but to:
+- make them easier to find
+- present them in a clear, minimal format
 
-make them easier to find,
-and present them in a clear, minimal format.
 Project is meant to stay simple, transparent and community-friendly.
 
 ~ Main Features ~
@@ -27,9 +27,9 @@ Each category has its own search bar for fast filtering.
 
 - Smart de-duplication system
 Duplicate entries are removed using clear priority rules:
-a) URL
-b) Title + website host
-c) Title only (fallback)
+1) URL
+2) Title + website host
+3) Title only (fallback)
 
 - Safe external links
 All links open in a new tab with proper security attributes.
@@ -43,11 +43,8 @@ Inspired by Geometry Dash list aesthetics but focused on content, not visuals.
 ~ Who This Is For ~
 
 - Players looking for lists by topic or difficulty
-
 - Community members who want a single reference hub
-
 - List maintainers checking coverage or duplicates
-
 - Anyone tired of digging through dozens of documents
 
 ~ Tech Stack(if someone interested) ~
@@ -56,7 +53,7 @@ Inspired by Geometry Dash list aesthetics but focused on content, not visuals.
 - CSS
 - Vanilla JavaScript
 
-- Single file (index.html)
+Single file (index.html)
 
 ~ Running the Project ~
 
@@ -98,8 +95,8 @@ Soo if you want to:
 - or improve logic/UI(mostly done be AI [sorry..]),
 
 you can:
-a) open an issue on GitHub
-b) contact me directly
+1) open an issue on GitHub
+2) contact me directly
 
 Contact:
 - Discord: purpurrr13
