@@ -4,182 +4,131 @@ Geometry Dash Lists Hub
 
 🌐 Live site: (GitHub Pages – https://purpur138.github.io/gd-lists-hub/)
 
-A lightweight, static hub that collects and organizes Geometry Dash community lists in one place.
-No accounts, no tracking, no unnecessary features — just a clean, fast way to find lists.
+Lightweight, static hub that collects and organizes Geometry Dash community lists in one place.
+just a clean and fast way to find lists.
 
-About the Project
+~ About the Project ~
 
 Geometry Dash Lists Hub is a single-page, static website created to centralize many Geometry Dash lists that are currently scattered across Google Docs, spreadsheets, and various websites.
 
 The goal is not to replace existing lists, but to:
 
 make them easier to find,
-
-remove unnecessary duplicates,
-
 and present them in a clear, minimal format.
+Project is meant to stay simple, transparent and community-friendly.
 
-This project is meant to stay simple, transparent, and community-friendly.
+~ Main Features ~
 
-Main Features
+- Category-based layout
+Lists are grouped into clear, easy to navigate sections.
 
-📂 Category-based layout
-Lists are grouped into clear, collapsible sections.
-
-🔍 Per-category search
+- Per-category search
 Each category has its own search bar for fast filtering.
 
-🧠 Smart de-duplication system
+- Smart de-duplication system
 Duplicate entries are removed using clear priority rules:
+a) URL
+b) Title + website host
+c) Title only (fallback)
 
-URL
-
-Title + website host
-
-Title only (fallback)
-
-🔗 Safe external links
+- Safe external links
 All links open in a new tab with proper security attributes.
 
-⚡ Fast & lightweight
-No frameworks, no backend, no build process.
+- Fast & lightweight
+Without any fireworks, nothing special and easy to use.
 
-🎨 Minimal UI
-Inspired by Geometry Dash list aesthetics — focused on content, not visuals.
+- Minimal UI
+Inspired by Geometry Dash list aesthetics but focused on content, not visuals.
 
-Who This Is For
+~ Who This Is For ~
 
-Players looking for lists by topic or difficulty
+- Players looking for lists by topic or difficulty
 
-Community members who want a single reference hub
+- Community members who want a single reference hub
 
-List maintainers checking coverage or duplicates
+- List maintainers checking coverage or duplicates
 
-Anyone tired of digging through dozens of documents
+- Anyone tired of digging through dozens of documents
 
-Tech Stack
+~ Tech Stack(if someone interested) ~
 
-HTML
+- HTML
+- CSS
+- Vanilla JavaScript
 
-CSS
+- Single file (index.html)
 
-Vanilla JavaScript
-
-Single file (index.html)
-
-No backend, no database, no dependencies.
-
-Running the Project
+~ Running the Project ~
 
 You don’t need to install anything.
 
 Option 1: Open locally
-
 Just open index.html in your browser.
 
 Option 2: Local server (optional)
 python -m http.server 8080
-
-
 Then open http://localhost:8080
 
-Hosting
+~ Hosting ~
 
 The project works perfectly on static hosting platforms.
 
 Recommended:
-
-GitHub Pages (current setup)
-
-Netlify
-
-Any basic static web host
+- GitHub Pages (current setup)
+- Netlify
+- Any basic static web host
 
 No configuration required.
 
-Project Structure
+~ Project Structure ~
 /
 └── index.html   # Entire project (HTML + CSS + JS)
 
+Everything is in one file to be VERY simple.
+easy to maintain, fork and host.
 
-Everything lives in one file on purpose:
-
-easy to maintain
-
-easy to fork
-
-easy to host
-
-Contribution & Feedback
+~ Contribution & Feedback ~
 
 This project is community-oriented.
 
-If you want to:
-
-report missing lists,
-
-suggest changes,
-
-point out duplicates,
-
-or improve logic/UI,
+Soo if you want to:
+- report missing lists,
+- suggest changes,
+- point out duplicates,
+- or improve logic/UI(mostly done be AI [sorry..]),
 
 you can:
-
-open an issue on GitHub
-
-or contact me directly
+a) open an issue on GitHub
+b) contact me directly
 
 Contact:
-
-Discord: purpurrr13
-
-Email: droxyt518@gmail.com
+- Discord: purpurrr13
+- Email: droxyt518@gmail.com
 
 Please keep suggestions aligned with the project’s philosophy:
-
 simple, static, and useful.
 
-License
+~ License ~
 
-This project uses the MIT License.
-
+This project is free to use.
 You are free to:
-
-use it,
-
-modify it,
-
-fork it,
-
-and build on top of it,
+- use it
+- modify it
+- fork it
+- build on top of it
 
 as long as attribution is preserved.
 
-Credits
+~ Credits ~
 
 Inspired by the community-maintained GD Lists Hub Google Document
+soo thanks to all Geometry Dash list creators and maintainers.
 
-Thanks to all Geometry Dash list creators and maintainers
-
-Roadmap (Loose)
-
-Improve duplicate detection as the dataset grows
-
-Add small UX improvements where useful
-
-Keep the site fast and readable
-
-Avoid feature bloat
-
-Final note (important)
+~ Final note ~
 
 This project is intentionally not:
+- social platform
+- ranking authority
+- replacement for original lists
 
-a social platform
-
-a ranking authority
-
-a replacement for original lists
-
-It’s a hub, nothing more — and that’s the point.
+It’s a hub, nothing more.
